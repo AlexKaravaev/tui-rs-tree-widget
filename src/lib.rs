@@ -20,6 +20,7 @@ pub use identifier::{
 pub struct TreeState {
     offset: usize,
     selected: TreeIdentifierVec,
+    picked: TreeIdentifierVec,
     opened: HashSet<TreeIdentifierVec>,
 }
 
@@ -27,6 +28,11 @@ impl TreeState {
     pub fn selected(&self) -> Vec<usize> {
         self.selected.clone()
     }
+
+    pub fn picked(&self) -> Vec<usize> {
+        self.picked.clone()
+    }
+
 
     pub fn select<I>(&mut self, identifier: I)
     where
@@ -38,6 +44,13 @@ impl TreeState {
         if self.selected.is_empty() {
             self.offset = 0;
         }
+    }
+
+    pub fn pick<I>(&mut self, identifier: I)
+    where
+        I: Into<Vec<usize>>,
+    {
+        self.picked = identifier.into();
     }
 
     /// Open a tree node.
@@ -83,7 +96,7 @@ impl TreeState {
 
 #[derive(Debug, Clone)]
 pub struct TreeItem<'a> {
-    text: Text<'a>,
+    pub text: Text<'a>,
     style: Style,
     children: Vec<TreeItem<'a>>,
 }
@@ -144,6 +157,8 @@ pub struct Tree<'a> {
     start_corner: Corner,
     /// Style used to render selected item
     highlight_style: Style,
+    /// Style used to render picked item
+    picked_style: Style,
     /// Symbol in front of the selected item (Shift all items to the right)
     highlight_symbol: Option<&'a str>,
 }
@@ -159,6 +174,7 @@ impl<'a> Tree<'a> {
             items: items.into(),
             start_corner: Corner::TopLeft,
             highlight_style: Style::default(),
+            picked_style: Style::default(),
             highlight_symbol: None,
         }
     }
@@ -185,6 +201,12 @@ impl<'a> Tree<'a> {
     #[must_use]
     pub const fn highlight_style(mut self, style: Style) -> Self {
         self.highlight_style = style;
+        self
+    }
+    
+    #[must_use]
+    pub const fn picked_style(mut self, style: Style) -> Self {
+        self.picked_style = style;
         self
     }
 
@@ -321,6 +343,12 @@ impl<'a> StatefulWidget for Tree<'a> {
             if is_selected {
                 buf.set_style(area, self.highlight_style);
             }
+            
+            let is_picked = state.picked == item.identifier;
+            if is_picked {
+                buf.set_style(area, self.picked_style);
+            }
+
         }
     }
 }
