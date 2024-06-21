@@ -177,7 +177,7 @@ impl TreeState {
 /// ```
 #[derive(Debug, Clone)]
 pub struct TreeItem<'a> {
-    text: Text<'a>,
+    pub text: Text<'a>,
     style: Style,
     children: Vec<TreeItem<'a>>,
 }
